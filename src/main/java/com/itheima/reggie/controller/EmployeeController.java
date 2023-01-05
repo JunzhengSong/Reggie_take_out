@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 
 /**
@@ -82,5 +83,22 @@ public class EmployeeController {
         request.getSession().removeAttribute("employee");
         //这个session是保存在哪里的，何时产生的，谁发送给谁的
         return R.success("退出成功");
+    }
+
+    @PostMapping
+    public R<String> save(HttpServletRequest request, @RequestBody Employee employee){
+        log.info("新增员工，员工信息：{}",employee.toString());
+        //设置初始密码123456，需要进行MD5加密
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
+        employee.setCreateTime(LocalDateTime.now());//LocalDateTime 和旧的API相比，新API严格区分了时刻、本地日期、本地时间和带时区的日期时间，并且，对日期和时间进行运算更加方便。
+        employee.setUpdateTime(LocalDateTime.now());
+        //获得当前登录用户的id
+        Long empId = (Long) request.getSession().getAttribute("employee");
+        employee.setCreateUser(empId);
+        employee.setUpdateUser(empId);
+
+        //controller层完成上面功能后调用service层服务保存
+        employeeService.save(employee);//save方法不是自己写的，而是service接口继承了MyBatisPlus中的父接口IService接口，使用的父接口的save方法
+        return R.success("新增员工成功");
     }
 }

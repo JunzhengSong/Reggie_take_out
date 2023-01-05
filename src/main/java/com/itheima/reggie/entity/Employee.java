@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 
 /**
  * 员工实体
+ * 使用lombok的@Getter和@Setter注解后，与在类中生成getter、setter方法效果相同
+ * @Data = @Getter+@Setter+@ToString+@EqualsAndHashCode+@RequiredArgsConstructor
  */
 @Data
 public class Employee implements Serializable {
