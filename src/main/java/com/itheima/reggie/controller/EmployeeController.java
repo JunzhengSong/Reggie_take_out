@@ -1,15 +1,21 @@
 package com.itheima.reggie.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.entity.Employee;
 import com.itheima.reggie.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+
 
 /**
  * @RestController = @Controler+@ResponseBody（用法看一下springboot md）
@@ -22,13 +28,59 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    @PostMapping("/login")
     /**
-     * 因为前端发送的是post请求，所以使用@PostMapping
-     * 因为发送的数据是json格式，所以在接收参数时要使用@RequestBody注解
-     * json中的key要与类中的属性名相同才能封装成功
+     * 员工登录
+     *      * 因为前端发送的是post请求，所以使用@PostMapping
+     *      * 因为发送的数据是json格式，所以在接收参数时要使用@RequestBody注解
+     *      * json中的key要与类中的属性名相同才能封装成功
+     *      * 登录成功之后，需要把employee对象的id存到session一份表示登陆成功，那么想要获取当前登录用户就能随时获取出来，到时候就可以
+     *      * 通过request来get一个session
+     * @param request
+     * @param employee
+     * @return
      */
-    public R<Employee> login(@RequestBody Employee employee){
-        return null;
+    @PostMapping("/login")
+    public R<Employee> login(HttpServletRequest request, @RequestBody Employee employee){
+        //1、将页面提交的密码password进行md5加密处理
+        String password = employee.getPassword();
+        password = DigestUtils.md5DigestAsHex(password.getBytes());
+
+        //2、根据页面提交的用户名username查询数据库
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Employee::getUsername,employee.getUsername());
+        Employee emp = employeeService.getOne(queryWrapper);
+
+        //3、如果没有查询到则返回登录失败结果
+        if(emp == null){
+            return R.error("不存在该用户，登录失败");
+        }
+
+        //4、密码比对，如果不一致则返回登录失败结果
+        if(!emp.getPassword().equals(password)){
+            return R.error("密码错误，登录失败");
+        }
+
+        //5、查看员工状态，如果为已禁用状态，则返回员工已禁用结果
+        if(emp.getStatus() == 0){
+            return R.error("账号已禁用");
+        }
+
+        //6、登录成功，将员工id存入Session并返回登录成功结果
+        request.getSession().setAttribute("employee",emp.getId());
+        return R.success(emp);
+    }
+
+    /**
+     * 员工退出
+     * @param request
+     * @return
+     */
+    @PostMapping("/logout")
+    public R<String> logout(HttpServletRequest request){
+        //HttpServletRequest对象代表客户端的请求，当客户端通过HTTP协议访问服务器时，HTTP请求头中的所有信息都封装在这个对象中，通过这个对象提供的方法，可以获得客户端请求的所有信息。
+        //清理Session中保存的当前登录员工的id
+        request.getSession().removeAttribute("employee");
+        //这个session是保存在哪里的，何时产生的，谁发送给谁的
+        return R.success("退出成功");
     }
 }

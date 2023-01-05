@@ -101,7 +101,7 @@
               this.loading = true
               let res = await loginApi(this.loginForm)
               if (String(res.code) === '1') { /*前端与后端约定好，值为1表示登录成功*/
-                localStorage.setItem('userInfo',JSON.stringify(res.data))
+                localStorage.setItem('userInfo',JSON.stringify(res.data))/*登录成功后，把返回来的数据R转换成json，写到浏览器里，在application的local storage中可以看到*/
                 window.location.href= '/backend/index.html'
               } else {
                 this.$message.error(res.msg)/*登陆失败，提示错误信息*/
