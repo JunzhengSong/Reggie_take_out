@@ -84,6 +84,12 @@ public class EmployeeController {
         return R.success("退出成功");
     }
 
+    /** 新增员工
+     *
+     * @param request
+     * @param employee
+     * @return
+     */
     @PostMapping
     public R<String> save(HttpServletRequest request, @RequestBody Employee employee){
         log.info("新增员工，员工信息：{}",employee.toString());
@@ -101,7 +107,7 @@ public class EmployeeController {
         return R.success("新增员工成功");
     }
 
-    /**
+    /** 员工信息分页查询
      *
      * @param page
      * @param pageSize
@@ -118,7 +124,45 @@ public class EmployeeController {
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper();
         //添加一个过滤条件
         queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
-        //执行查询
-        return null;
+        //添加一个排序条件
+        queryWrapper.orderByDesc(Employee::getUpdateTime);
+        //执行查询  arg1 分页构造器 arg2 条件构造器
+        employeeService.page(pageInfo,queryWrapper);//不需要接收返回值，因为在查询的内部就会对数据进行封装给相应的对象
+        return R.success(pageInfo);
     }
+
+    /**
+     * 根据id修改员工信息，无论是禁用启用还是编辑其他信息都可以用着同一个方法
+     * 只是传给他的对象不同
+     * @param employee
+     * @return
+     */
+    @PutMapping
+    public R<String> update(HttpServletRequest request,@RequestBody Employee employee){
+        log.info(employee.toString());
+
+        Long empId = (Long)request.getSession().getAttribute("employee");
+        employee.setUpdateTime(LocalDateTime.now());
+        employee.setUpdateUser(empId);
+        employeeService.updateById(employee);
+
+        return R.success("员工信息修改成功");
+    }
+
+    /**
+     * 根据id查询员工信息
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}")
+    public R<Employee> getById(@PathVariable Long id){
+        log.info("根据id查询员工信息...");
+        Employee employee = employeeService.getById(id);
+        if(employee != null){
+            return R.success(employee);
+        }
+        return R.error("没有查询到对应员工信息");
+    }
+
+
 }
