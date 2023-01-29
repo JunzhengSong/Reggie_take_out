@@ -95,12 +95,13 @@ public class EmployeeController {
         log.info("新增员工，员工信息：{}",employee.toString());
         //设置初始密码123456，需要进行MD5加密
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
-        employee.setCreateTime(LocalDateTime.now());//LocalDateTime 和旧的API相比，新API严格区分了时刻、本地日期、本地时间和带时区的日期时间，并且，对日期和时间进行运算更加方便。
-        employee.setUpdateTime(LocalDateTime.now());
+        /* 使用mybatisplus公共字段自动填充 */
+        //employee.setCreateTime(LocalDateTime.now());//LocalDateTime 和旧的API相比，新API严格区分了时刻、本地日期、本地时间和带时区的日期时间，并且，对日期和时间进行运算更加方便。
+        //employee.setUpdateTime(LocalDateTime.now());
         //获得当前登录用户的id
-        Long empId = (Long) request.getSession().getAttribute("employee");
-        employee.setCreateUser(empId);
-        employee.setUpdateUser(empId);
+        //Long empId = (Long) request.getSession().getAttribute("employee");
+        //employee.setCreateUser(empId);
+        //employee.setUpdateUser(empId);
 
         //controller层完成上面功能后调用service层服务保存
         employeeService.save(employee);//save方法不是自己写的，而是service接口继承了MyBatisPlus中的父接口IService接口，使用的父接口的save方法
@@ -141,9 +142,9 @@ public class EmployeeController {
     public R<String> update(HttpServletRequest request,@RequestBody Employee employee){
         log.info(employee.toString());
 
-        Long empId = (Long)request.getSession().getAttribute("employee");
-        employee.setUpdateTime(LocalDateTime.now());
-        employee.setUpdateUser(empId);
+        //Long empId = (Long)request.getSession().getAttribute("employee");
+        //employee.setUpdateTime(LocalDateTime.now());
+        //employee.setUpdateUser(empId);
         employeeService.updateById(employee);
 
         return R.success("员工信息修改成功");

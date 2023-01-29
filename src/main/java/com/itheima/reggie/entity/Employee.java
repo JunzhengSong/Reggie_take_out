@@ -32,8 +32,11 @@ public class Employee implements Serializable {
 
     private Integer status;
 
+    //哪些属性是公共字段就在哪些属性上添加该注解，mybatisplus注解，
+    @TableField(fill = FieldFill.INSERT)//插入时填充字段（填充=填充策略）
     private LocalDateTime createTime;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)//插入和更新时填充字段
     private LocalDateTime updateTime;
 
     @TableField(fill = FieldFill.INSERT)
