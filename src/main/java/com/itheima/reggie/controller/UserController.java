@@ -7,6 +7,7 @@ import com.itheima.reggie.service.UserService;
 import com.itheima.reggie.utils.MailUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author sjz
@@ -31,7 +33,8 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;//  impl没有 implements UserService
-
+    @Autowired
+    private RedisTemplate redisTemplate;
     @PostMapping("/sendMsg")
     public R<String> sendMsg(@RequestBody User user, HttpSession session) throws MessagingException, MessagingException {
         String phone = user.getPhone();
@@ -42,7 +45,10 @@ public class UserController {
             //这里的phone其实就是邮箱，code是我们生成的验证码
             MailUtils.sendMail(phone, code);
             //验证码存session，方便后面拿出来比对
-            session.setAttribute(phone, code);
+            session.setAttribute(phone, code);//升级前验证码放在session里面
+
+            //将生成的验证码缓存到Redis中，并且设置有效期为5分钟
+            redisTemplate.opsForValue().set(phone,code,5, TimeUnit.MINUTES);
             return R.success("验证码发送成功");
         }
         return R.error("验证码发送失败");
@@ -56,9 +62,12 @@ public class UserController {
         //获取验证码
         String code = map.get("code").toString();
         //从session中获取验证码
-        String codeInSessoin = session.getAttribute(phone).toString();
+        //String codeInSession = session.getAttribute(phone).toString();
+
+        //从redis中获取缓存的验证码
+        String codeInSession = redisTemplate.opsForValue().get(phone).toString();
         //比较这用户输入的验证码和session中存的验证码是否一致
-        if (code != null && code.equals(codeInSessoin)) {
+        if (code != null && code.equals(codeInSession)) {
             //如果输入正确，判断一下当前用户是否存在
             LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
             //判断依据是从数据库中查询是否有其邮箱
@@ -73,6 +82,8 @@ public class UserController {
             }
             //存个session，表示登录状态
             session.setAttribute("user",user.getId());
+            //如果用户登录成功，删除redis中缓存的验证码
+            redisTemplate.delete(phone);
             //并将其作为结果返回
             return R.success(user);
         }
