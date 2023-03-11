@@ -3,5 +3,3 @@ target/
 .idea/
 #忽略所有.iml文件
 *.iml
-src/
-# 忽略所有src目录
