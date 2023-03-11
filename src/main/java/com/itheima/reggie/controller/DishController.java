@@ -137,28 +137,40 @@ public class DishController {
         log.info("dish:{}", dish);
         //条件构造器
         LambdaQueryWrapper<Dish> queryWrapper = new LambdaQueryWrapper<>();
+        //根据传进来的categoryId查询
         queryWrapper.like(StringUtils.isNotEmpty(dish.getName()), Dish::getName, dish.getName());
         queryWrapper.eq(null != dish.getCategoryId(), Dish::getCategoryId, dish.getCategoryId());
         //添加条件，查询状态为1（起售状态）的菜品
         queryWrapper.eq(Dish::getStatus,1);
         queryWrapper.orderByDesc(Dish::getUpdateTime);
 
-        List<Dish> dishs = dishService.list(queryWrapper);
+        List<Dish> dishList = dishService.list(queryWrapper);
 
-        List<DishDto> dishDtos = dishs.stream().map(item -> {
+        //item就是list中的每一条数据，相当于遍历了
+        List<DishDto> dishDtoList = dishList.stream().map(item -> {
+            //创建一个dishDto对象
             DishDto dishDto = new DishDto();
+            //将item的属性全都copy到dishDto里
             BeanUtils.copyProperties(item, dishDto);
+
             Category category = categoryService.getById(item.getCategoryId());
             if (category != null) {
+                //然后取出categoryName，赋值给dishDto
                 dishDto.setCategoryName(category.getName());
             }
+
+
             LambdaQueryWrapper<DishFlavor> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(DishFlavor::getDishId, item.getId());
 
+
+
             dishDto.setFlavors(dishFlavorService.list(wrapper));
+
+
             return dishDto;
         }).collect(Collectors.toList());
 
-        return R.success(dishDtos);
+        return R.success(dishDtoList);
     }
 }

@@ -7,4 +7,5 @@ public class CustomException extends RuntimeException{
     public CustomException(String message){//目的：将提示信息传进来
         super(message);
     }
+
 }

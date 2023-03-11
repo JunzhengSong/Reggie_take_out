@@ -20,18 +20,20 @@ public class R<T> {
     private T data; //数据
 
     private Map map = new HashMap(); //动态数据
-
+    //这里提供了几个静态方法来返回一个Result对象
+    //之前是直接用构造器的set方法也可以实现同样的功能
+    //不过此种方式的复用性更高
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
-        r.data = object;
-        r.code = 1;
+        r.setData(object);//set方法  和使用属性 = 的区别？
+        r.setCode(1);
         return r;
     }
 
     public static <T> R<T> error(String msg) {
-        R r = new R();
-        r.msg = msg;
-        r.code = 0;
+        R<T> r = new R<>();
+        r.setMsg(msg);
+        r.setCode(0);
         return r;
     }
 
