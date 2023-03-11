@@ -88,11 +88,11 @@ public class LoginCheckFilter implements Filter{
         if(request.getSession().getAttribute("user") != null){
             log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("user"));
             Long userId = (Long)request.getSession().getAttribute("user");
-            System.out.println("邮箱登录时的user id,直接获取"+userId);
+            //System.out.println("邮箱登录时的user id,直接获取"+userId);
 
             BaseContext.setCurrentId(userId);
-            System.out.println("邮箱登录时的userId ，从BaseContext中获取"+BaseContext.getCurrentId());
-            System.out.println("注入时的线程id " + Thread.currentThread().getId());
+            //System.out.println("邮箱登录时的userId ，从BaseContext中获取"+BaseContext.getCurrentId());
+            //System.out.println("注入时的线程id " + Thread.currentThread().getId());
             //放进去了啊，为啥获取不到？？？
             filterChain.doFilter(request,response);
             return;
