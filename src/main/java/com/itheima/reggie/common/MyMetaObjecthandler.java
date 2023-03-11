@@ -25,6 +25,7 @@ public class MyMetaObjecthandler implements MetaObjectHandler {
         log.info(metaObject.toString());
         metaObject.setValue("createTime", LocalDateTime.now());
         metaObject.setValue("updateTime",LocalDateTime.now());
+        System.out.println("有没有获取到create_user"+BaseContext.getCurrentId());//没有获取到，显示是null
         metaObject.setValue("createUser",BaseContext.getCurrentId());//从ThreadLocal中获取前面填入的id
         metaObject.setValue("updateUser",BaseContext.getCurrentId());
     }
@@ -43,5 +44,9 @@ public class MyMetaObjecthandler implements MetaObjectHandler {
 
         metaObject.setValue("updateTime",LocalDateTime.now());
         metaObject.setValue("updateUser",BaseContext.getCurrentId());
+
+        //配置创建的公共字段填充
+        metaObject.setValue("createTime", LocalDateTime.now());
+        metaObject.setValue("createUser", BaseContext.getCurrentId());
     }
 }

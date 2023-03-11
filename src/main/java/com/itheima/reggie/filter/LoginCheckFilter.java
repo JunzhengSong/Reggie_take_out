@@ -45,7 +45,15 @@ public class LoginCheckFilter implements Filter{
                 "/employee/logout",
                 //只拦截动态的controller请求，静态页面可以不拦截
                 "/backend/**",
-                "/front/**"
+                "/front/**",
+                //添加验证码登录
+                "/common/**",
+                "/user/login",
+                "/user/sendMsg",//bug 少写了一个斜线，就被拦截了  调用/user/sendMsg/请求的时候直接被拦截重新加载了login主页
+                //对addressbook放行，可能没登录 所以id为空和登录时不是同一个用户
+                //对addressbook放行会导致 使用一个新线程 去保存，新线程没有用户，为什么 拦截器能决定使用不使用新线程？
+                //难题： 需要登陆的接口如何使用postman测试？
+                //使用postman测试接口时需要先登录怎么办 原创
         };
 
 
@@ -58,7 +66,7 @@ public class LoginCheckFilter implements Filter{
 
         //3、如果不需要处理，则直接放行
         if(check){
-            log.info("本次请求{}不需要处理",requestURI);
+            //log.info("本次请求{}不需要处理",requestURI);
             filterChain.doFilter(request,response);
             return;
         }
@@ -75,6 +83,20 @@ public class LoginCheckFilter implements Filter{
             return;
         }
 
+        //客户登录
+        //判断用户是否登录
+        if(request.getSession().getAttribute("user") != null){
+            log.info("用户已登录，用户id为：{}",request.getSession().getAttribute("user"));
+            Long userId = (Long)request.getSession().getAttribute("user");
+            System.out.println("邮箱登录时的user id,直接获取"+userId);
+
+            BaseContext.setCurrentId(userId);
+            System.out.println("邮箱登录时的userId ，从BaseContext中获取"+BaseContext.getCurrentId());
+            System.out.println("注入时的线程id " + Thread.currentThread().getId());
+            //放进去了啊，为啥获取不到？？？
+            filterChain.doFilter(request,response);
+            return;
+        }
         log.info("用户未登录");
         //5、如果未登录则返回未登录结果，通过输出流方式向客户端页面响应数据
         response.getWriter().write(JSON.toJSONString(R.error("NOTLOGIN")));

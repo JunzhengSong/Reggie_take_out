@@ -19,4 +19,6 @@ mybatis-plus:
     db-config:
       id-type: ASSIGN_ID
 reggie:
-  path: D:\
+  path: E:\reggie\
+
+  #是 reggie: path: 别把path给扔了
