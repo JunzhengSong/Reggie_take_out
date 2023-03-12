@@ -54,6 +54,10 @@ public class LoginCheckFilter implements Filter{
                 //对addressbook放行会导致 使用一个新线程 去保存，新线程没有用户，为什么 拦截器能决定使用不使用新线程？
                 //难题： 需要登陆的接口如何使用postman测试？
                 //使用postman测试接口时需要先登录怎么办 原创
+                "/doc.html",
+                "/webjars/**",
+                "/swagger-resources",
+                "/v2/api-docs"
         };
 
 
