@@ -103,6 +103,12 @@
             <version>1.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+            <version>4.0.0-RC1</version>
+        </dependency>
+
     </dependencies>
     <!--插件用build标签-->
     <build>
